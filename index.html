@@ -1,680 +1,585 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SHAMELESS Blackjack</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
-    /* Reset & base */
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      height: 100vh;
-      background:
-        linear-gradient(270deg, #0a001f, #200051, #0a001f);
-      background-size: 600% 600%;
-      animation: bgMove 25s ease infinite;
-      font-family: 'Orbitron', monospace, sans-serif;
-      color: #b688ff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      user-select: none;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SHAMELESS Blackjack</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+  body {
+    margin: 0;
+    background: #100016;
+    color: #b59bff;
+    font-family: 'Orbitron', sans-serif;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  h1 {
+    margin-bottom: 10px;
+    color: #9a65ff;
+    text-shadow: 0 0 8px #7a3fff;
+  }
+  #game {
+    background: #1c0a36;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 30px #6b3fff88;
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hand-container {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  #dealer-hand, #player-hand {
+    display: flex;
+    gap: 10px;
+  }
+  .card {
+    width: 60px;
+    height: 90px;
+    background: linear-gradient(145deg, #22003c, #4e1f91);
+    border-radius: 8px;
+    color: #f8f4ff;
+    position: relative;
+    box-shadow: 0 0 6px #7a3fffaa;
+    text-align: center;
+    font-weight: 900;
+    font-size: 20px;
+    cursor: default;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+  }
+  .card.red {
+    color: #ff5873;
+  }
+  .card.back {
+    background: linear-gradient(145deg, #40005c, #9a65ff);
+    box-shadow: inset 0 0 10px #6a3fffcc;
+  }
+  .card .top-left, .card .bottom-right {
+    position: absolute;
+    font-size: 14px;
+    line-height: 14px;
+  }
+  .card .top-left {
+    top: 5px;
+    left: 6px;
+  }
+  .card .bottom-right {
+    bottom: 5px;
+    right: 6px;
+    transform: rotate(180deg);
+  }
+  .card .center {
+    font-size: 40px;
+    line-height: 90px;
+  }
 
-    @keyframes bgMove {
-      0% {background-position:0% 50%;}
-      50% {background-position:100% 50%;}
-      100% {background-position:0% 50%;}
-    }
+  /* Buttons */
+  button {
+    margin: 6px 8px 12px 8px;
+    background: #3e1a90;
+    border: none;
+    color: #d4bfff;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 8px 18px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px #7a3fffaa;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    background: #7a3fff;
+    box-shadow: 0 0 24px #9a65ff;
+  }
+  button:disabled {
+    background: #55307b;
+    cursor: default;
+    box-shadow: none;
+  }
 
-    /* Ambient visualizer behind game */
-    #ambient-bars {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60vw;
-      height: 60px;
-      display: flex;
-      gap: 4px;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .bar {
-      background: #6a33ffdd;
-      width: 8px;
-      border-radius: 4px;
-      animation: pulseBar 1.8s ease-in-out infinite;
-      animation-delay: calc(var(--i) * -0.18s);
-      opacity: 0.7;
-    }
-    @keyframes pulseBar {
-      0%, 100% {height: 30%;}
-      50% {height: 100%;}
-    }
+  /* Bet slider */
+  #bet-slider {
+    width: 320px;
+    margin: 10px 0;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: #4b238f;
+    outline: none;
+    box-shadow: 0 0 8px #7a3fffaa;
+    cursor: pointer;
+  }
+  #bet-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #bb87ff;
+    cursor: pointer;
+    box-shadow: 0 0 6px #9a65ff;
+    transition: background 0.2s ease;
+  }
+  #bet-slider::-webkit-slider-thumb:hover {
+    background: #d8b7ff;
+  }
+  #bet-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #bb87ff;
+    cursor: pointer;
+    box-shadow: 0 0 6px #9a65ff;
+    transition: background 0.2s ease;
+  }
+  #bet-info {
+    text-align: center;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #ccbbff;
+  }
 
-    /* Title */
-    h1 {
-      margin: 0 0 1rem 0;
-      color: #dbb6ff;
-      font-weight: 900;
-      font-size: 3rem;
-      text-shadow:
-        0 0 15px #a17aff,
-        0 0 30px #7d48ff,
-        0 0 50px #9e62ffaa;
-      letter-spacing: 7px;
-      z-index: 10;
-    }
+  /* Chip Stack */
+  #chip-stack {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px auto;
+  }
+  .chip {
+    position: absolute;
+    width: 60px;
+    height: 18px;
+    border-radius: 50% / 40%;
+    background: linear-gradient(145deg, #7a3fff, #b07dff);
+    box-shadow: 0 2px 5px #6a3fffcc;
+    border: 2px solid #4e1f91;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+  /* Stack chips with vertical offset and random slight rotation */
+  .chip:nth-child(1) { bottom: 0; left: 10px; transform: rotate(-5deg); }
+  .chip:nth-child(2) { bottom: 14px; left: 15px; transform: rotate(3deg); }
+  .chip:nth-child(3) { bottom: 28px; left: 5px; transform: rotate(-3deg); }
+  .chip:nth-child(4) { bottom: 42px; left: 12px; transform: rotate(2deg); }
+  .chip:nth-child(5) { bottom: 56px; left: 8px; transform: rotate(-2deg); }
+  .chip:nth-child(6) { bottom: 70px; left: 10px; transform: rotate(4deg); }
 
-    /* Main container */
-    #game {
-      background: #1c004cdd;
-      border-radius: 18px;
-      padding: 26px 30px 36px;
-      width: 420px;
-      box-shadow:
-        0 0 40px #6a33ffcc,
-        inset 0 0 40px #a779ff88;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      z-index: 10;
-      user-select: none;
-    }
+  /* Status text */
+  #status {
+    font-weight: 700;
+    font-size: 18px;
+    height: 24px;
+    color: #c9aaff;
+    text-align: center;
+    margin: 10px 0;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+  }
 
-    /* Labels */
-    #game > div.label {
-      width: 100%;
-      color: #d2a1ffcc;
-      font-weight: 700;
-      font-size: 1.1rem;
-      text-shadow: 0 0 4px #9f68ff88;
-      margin: 4px 0 6px 0;
-      letter-spacing: 1px;
-      user-select: none;
-    }
+  /* Stats panel */
+  #stats {
+    margin-top: 15px;
+    background: #220044;
+    padding: 12px 16px;
+    border-radius: 12px;
+    width: 340px;
+    color: #d6c3ff;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 0 20px #6b3fff66 inset;
+  }
+  #stats h3 {
+    margin: 0 0 8px 0;
+    color: #b494ff;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  #stats ul {
+    padding-left: 18px;
+    margin: 0;
+  }
+  #stats li {
+    margin: 4px 0;
+  }
 
-    /* Hands */
-    .hand {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      gap: 14px;
-      min-height: 98px;
-      margin-bottom: 20px;
-      perspective: 700px;
-      user-select: none;
-    }
-
-    /* Card style */
-    .card {
-      position: relative;
-      width: 70px;
-      height: 98px;
-      border-radius: 14px;
-      box-shadow:
-        inset 0 0 12px #8a56ffcc,
-        0 0 22px #9d6fffcc;
-      cursor: default;
-      user-select: none;
-      transform-style: preserve-3d;
-      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-      filter: drop-shadow(0 0 5px #af8bffdd);
-      background: linear-gradient(145deg, #3a1172, #21004c);
-      color: #d2a1ff;
-      font-weight: 900;
-      font-size: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 12px 14px;
-      opacity: 0;
-      animation: cardFadeIn 0.3s forwards;
-      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .card.red {
-      color: #ff4c8b;
-      text-shadow: 0 0 8px #ff7db5;
-    }
-
-    /* Neon outline on hover */
-    .card:hover {
-      outline: 2.5px solid #c890ff;
-      box-shadow:
-        0 0 12px #c890ff,
-        inset 0 0 15px #c890ff;
-      transform: scale(1.12) translateZ(20px);
-      transition: transform 0.25s ease, outline 0.3s ease;
-      z-index: 100;
-    }
-
-    /* Card faces */
-    .card .top-left,
-    .card .bottom-right {
-      font-size: 20px;
-      user-select: none;
-      text-shadow: 0 0 2px #ab79ffcc;
-    }
-    .card .top-left {
-      align-self: flex-start;
-    }
-    .card .bottom-right {
-      align-self: flex-end;
-      transform: rotate(180deg);
-    }
-    .card .center {
-      font-size: 44px;
-      text-align: center;
-      line-height: 98px;
-      user-select: none;
-    }
-
-    /* Card flip container */
-    .card.flip {
-      animation: flipCard 0.6s forwards;
-    }
-    @keyframes flipCard {
-      0% {
-        transform: rotateY(0deg);
-        opacity: 0;
-      }
-      50% {
-        opacity: 1;
-      }
-      100% {
-        transform: rotateY(360deg);
-        opacity: 1;
-      }
-    }
-
-    @keyframes cardFadeIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Back of card */
-    .card.back {
-      background: linear-gradient(145deg, #330066, #1a004d);
-      box-shadow:
-        inset 0 0 20px #7b42ff,
-        0 0 18px #7b42ffaa;
-      position: relative;
-      color: transparent;
-      user-select: none;
-    }
-    .card.back::after {
-      content: '';
-      position: absolute;
-      top: 14px; bottom: 14px; left: 14px; right: 14px;
-      background: repeating-conic-gradient(
-        from 0deg,
-        #7b42ff 0deg 18deg,
-        #330066 18deg 36deg
-      );
-      border-radius: 10px;
-      opacity: 0.9;
-      z-index: 1;
-      user-select: none;
-    }
-
-    /* Status */
-    #status {
-      height: 46px;
-      font-weight: 800;
-      font-size: 1.25rem;
-      margin: 6px 0 12px 0;
-      min-height: 46px;
-      text-align: center;
-      color: #cc99ff;
-      text-shadow:
-        0 0 8px #c2a6ffbb,
-        0 0 22px #9a63ffbb;
-      user-select: none;
-      opacity: 0;
-      animation: statusFadeIn 0.7s forwards;
-      transition: opacity 0.3s ease;
-    }
-
-    @keyframes statusFadeIn {
-      to {
-        opacity: 1;
-      }
-    }
-
-    /* Chips */
-    #chips {
-      font-weight: 900;
-      font-size: 1.3rem;
-      margin-bottom: 18px;
-      text-align: center;
-      text-shadow: 0 0 10px #bb88ffcc;
-      user-select: none;
-    }
-
-    /* Buttons container */
-    #buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      user-select: none;
-      flex-wrap: wrap;
-    }
-
-    /* Buttons */
-    button {
-      background: linear-gradient(145deg, #6b47ff, #7a5fff);
-      border: none;
-      border-radius: 14px;
-      padding: 14px 28px;
-      color: #e9d8ff;
-      font-weight: 900;
-      font-size: 1.15rem;
-      cursor: pointer;
-      box-shadow:
-        0 0 20px #a785ffcc;
-      transition:
-        background 0.3s ease,
-        box-shadow 0.3s ease,
-        transform 0.25s ease;
-      position: relative;
-      overflow: hidden;
-      user-select: none;
-      flex: 1 1 120px;
-      max-width: 140px;
-      min-width: 120px;
-    }
-    button:focus {
-      outline: none;
-      box-shadow:
-        0 0 26px #d1a6ffcc,
-        0 0 40px #b37bffdd;
-      background: linear-gradient(145deg, #956eff, #af8bff);
-      transform: scale(1.12);
-    }
-    button:hover:not(:disabled) {
-      background: linear-gradient(145deg, #8952ff, #a65eff);
-      box-shadow:
-        0 0 28px #c58affcc,
-        0 0 44px #a26effdd;
-      transform: scale(1.12);
-    }
-    button:active:not(:disabled) {
-      animation: rippleClick 0.5s ease forwards;
-    }
-    button:disabled {
-      background: #4a2a6f88;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none !important;
-    }
-
-    /* Ripple animation */
-    @keyframes rippleClick {
-      0% {
-        box-shadow:
-          0 0 28px #c58affcc,
-          0 0 44px #a26effdd;
-        transform: scale(1.12);
-      }
-      100% {
-        box-shadow: none;
-        transform: scale(1);
-      }
-    }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      #game {
-        width: 90vw;
-        padding: 22px 16px 26px;
-      }
-      button {
-        flex: 1 1 45%;
-        max-width: none;
-      }
-      .hand {
-        gap: 8px;
-        min-height: 90px;
-      }
-      .card {
-        width: 56px;
-        height: 80px;
-        font-size: 22px;
-      }
-      .card .center {
-        font-size: 36px;
-        line-height: 80px;
-      }
-      h1 {
-        font-size: 2.2rem;
-      }
-    }
-  </style>
+</style>
 </head>
 <body>
-  <h1>SHAMELESS Blackjack</h1>
 
-  <div id="game" role="main" aria-label="Blackjack game interface">
-    <div class="label">Dealer's Hand</div>
-    <div class="hand" id="dealer-hand" aria-live="polite" aria-atomic="true"></div>
-
-    <div class="label">Your Hand</div>
-    <div class="hand" id="player-hand" aria-live="polite" aria-atomic="true"></div>
-
-    <div id="status" role="alert" aria-live="assertive">Place your bet and deal!</div>
-    <div id="chips" aria-live="polite" aria-atomic="true">Chips: 1000</div>
-
-    <div id="buttons">
-      <button id="deal-btn" aria-label="Deal cards to start round">Deal</button>
-      <button id="hit-btn" disabled aria-label="Hit - take another card">Hit</button>
-      <button id="stand-btn" disabled aria-label="Stand - end your turn">Stand</button>
-      <button id="reset-btn" disabled aria-label="Reset game">Reset</button>
-    </div>
+<h1>SHAMELESS Blackjack</h1>
+<div id="game" role="main" aria-label="Blackjack game">
+  <div id="dealer" aria-label="Dealer's hand" class="hand-container">
+    <div id="dealer-hand" aria-live="polite" aria-atomic="true"></div>
   </div>
 
-  <!-- Ambient bars behind -->
-  <div id="ambient-bars">
-    <div class="bar" style="--i:0"></div>
-    <div class="bar" style="--i:1"></div>
-    <div class="bar" style="--i:2"></div>
-    <div class="bar" style="--i:3"></div>
-    <div class="bar" style="--i:4"></div>
-    <div class="bar" style="--i:5"></div>
-    <div class="bar" style="--i:6"></div>
-    <div class="bar" style="--i:7"></div>
+  <div id="player" aria-label="Player's hand" class="hand-container">
+    <div id="player-hand" aria-live="polite" aria-atomic="true"></div>
   </div>
 
-  <script>
-    // Deck and cards setup
-    const suits = ['♠', '♥', '♦', '♣'];
-    const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  <div id="chip-stack" aria-live="polite" aria-atomic="true" aria-label="Player chips"></div>
+  
+  <div id="bet-info">Bet: 10 chips</div>
+  <input type="range" id="bet-slider" min="10" max="1000" value="10" step="10" aria-label="Bet amount slider" />
 
-    let deck = [];
-    let playerHand = [];
-    let dealerHand = [];
-    let chips = 1000;
-    let bet = 100;
-    let inRound = false;
+  <div id="status" aria-live="polite"></div>
 
-    // UI elements
-    const dealerHandEl = document.getElementById('dealer-hand');
-    const playerHandEl = document.getElementById('player-hand');
-    const statusEl = document.getElementById('status');
-    const chipsEl = document.getElementById('chips');
-    const dealBtn = document.getElementById('deal-btn');
-    const hitBtn = document.getElementById('hit-btn');
-    const standBtn = document.getElementById('stand-btn');
-    const resetBtn = document.getElementById('reset-btn');
+  <div>
+    <button id="btn-hit" aria-label="Hit button">Hit</button>
+    <button id="btn-stand" aria-label="Stand button">Stand</button>
+    <button id="btn-deal" aria-label="Deal button">Deal</button>
+  </div>
 
-    // Create deck
-    function createDeck() {
-      deck = [];
-      for (let suit of suits) {
-        for (let val of values) {
-          deck.push({ suit, val });
-        }
+  <div id="stats" aria-label="Game statistics panel">
+    <h3>Stats</h3>
+    <ul>
+      <li id="stat-wins">Wins: 0</li>
+      <li id="stat-losses">Losses: 0</li>
+      <li id="stat-pushes">Pushes: 0</li>
+      <li id="stat-streak">Current Streak: 0</li>
+      <li id="stat-chips">Chips: 1000</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  // Game variables
+  let deck = [];
+  let playerHand = [];
+  let dealerHand = [];
+  let playerChips = 1000;
+  let currentBet = 10;
+
+  // Stats
+  let wins = 0;
+  let losses = 0;
+  let pushes = 0;
+  let streak = 0; // positive = wins, negative = losses, zero = neutral
+
+  // DOM refs
+  const dealerHandDiv = document.getElementById('dealer-hand');
+  const playerHandDiv = document.getElementById('player-hand');
+  const statusDiv = document.getElementById('status');
+  const btnHit = document.getElementById('btn-hit');
+  const btnStand = document.getElementById('btn-stand');
+  const btnDeal = document.getElementById('btn-deal');
+  const chipStackDiv = document.getElementById('chip-stack');
+  const betSlider = document.getElementById('bet-slider');
+  const betInfo = document.getElementById('bet-info');
+
+  // Stats elements
+  const statWins = document.getElementById('stat-wins');
+  const statLosses = document.getElementById('stat-losses');
+  const statPushes = document.getElementById('stat-pushes');
+  const statStreak = document.getElementById('stat-streak');
+  const statChips = document.getElementById('stat-chips');
+
+  // Suits & values
+  const suits = ['♠', '♥', '♣', '♦'];
+  const values = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+
+  // Build a deck
+  function buildDeck() {
+    deck = [];
+    for (let s of suits) {
+      for (let v of values) {
+        deck.push({suit: s, val: v});
       }
     }
+  }
 
-    // Shuffle deck with Fisher-Yates
-    function shuffleDeck() {
-      for (let i = deck.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-      }
+  // Shuffle deck
+  function shuffleDeck() {
+    for (let i = deck.length -1; i > 0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
     }
+  }
 
-    // Calculate hand value, counting Aces as 1 or 11
-    function handValue(hand) {
-      let val = 0;
-      let aces = 0;
-      for (let card of hand) {
-        if (card.val === 'A') {
-          aces++;
-          val += 11;
-        } else if (['J', 'Q', 'K'].includes(card.val)) {
-          val += 10;
-        } else {
-          val += parseInt(card.val);
-        }
-      }
-      while (val > 21 && aces > 0) {
-        val -= 10;
-        aces--;
-      }
-      return val;
-    }
-
-    // Render cards with flip animation, with delay for deal animation
-    async function renderHand(hand, container, revealAll = false, delayBase = 0) {
-      container.innerHTML = '';
-      for (let i = 0; i < hand.length; i++) {
-        const card = hand[i];
-        const cardEl = document.createElement('div');
-        cardEl.classList.add('card');
-        // Red color for hearts and diamonds
-        if (card.suit === '♥' || card.suit === '♦') cardEl.classList.add('red');
-
-        // Hide dealer second card if not revealAll
-        if (container.id === 'dealer-hand' && i === 1 && !revealAll) {
-          cardEl.classList.add('back');
-          cardEl.textContent = '';
-        } else {
-          cardEl.innerHTML = `
-            <div class="top-left">${card.val}<br>${card.suit}</div>
-            <div class="center">${card.suit}</div>
-            <div class="bottom-right">${card.val}<br>${card.suit}</div>
-          `;
-        }
-        cardEl.style.opacity = '0';
-        container.appendChild(cardEl);
-
-        // Delay the animation per card for smooth dealing
-        await new Promise(res => setTimeout(res, 180 + delayBase));
-
-        // Animate fade-in + flip
-        cardEl.style.opacity = '1';
-        cardEl.classList.add('flip');
-        // Remove flip class after animation to allow reflip on next render
-        setTimeout(() => {
-          cardEl.classList.remove('flip');
-        }, 700);
-      }
-    }
-
-    // Update chips UI with smooth increment animation
-    function updateChips(amountChange = 0) {
-      if (amountChange !== 0) {
-        let start = chips - amountChange;
-        let end = chips;
-        let stepCount = 30;
-        let step = 0;
-        const interval = setInterval(() => {
-          step++;
-          let val = Math.round(start + ((end - start) * (step / stepCount)));
-          chipsEl.textContent = `Chips: ${val}`;
-          if (step >= stepCount) clearInterval(interval);
-        }, 15);
+  // Calculate hand value with ace logic
+  function handValue(hand) {
+    let val = 0;
+    let aces = 0;
+    for (let c of hand) {
+      if (['J','Q','K'].includes(c.val)) val += 10;
+      else if (c.val === 'A') {
+        aces++;
+        val += 11;
       } else {
-        chipsEl.textContent = `Chips: ${chips}`;
+        val += parseInt(c.val);
       }
     }
+    while (val > 21 && aces > 0) {
+      val -= 10;
+      aces--;
+    }
+    return val;
+  }
 
-    // Update status text with fade effect
-    function updateStatus(text) {
-      statusEl.style.opacity = 0;
+  // Render hand cards with animation and dealer's hidden card logic
+  function renderHand(hand, container, hideSecond=false) {
+    container.innerHTML = '';
+    hand.forEach((card, i) => {
+      const cardDiv = document.createElement('div');
+      cardDiv.classList.add('card');
+      if (card.suit === '♥' || card.suit === '♦') cardDiv.classList.add('red');
+      if (hideSecond && i === 1) {
+        cardDiv.classList.add('back');
+      } else {
+        cardDiv.innerHTML = `
+          <div class="top-left">${card.val}<br>${card.suit}</div>
+          <div class="center">${card.suit}</div>
+          <div class="bottom-right">${card.val}<br>${card.suit}</div>
+        `;
+      }
+      container.appendChild(cardDiv);
+    });
+  }
+
+  // Update chip stack visual with animation
+  function updateChipStack(amount) {
+    chipStackDiv.innerHTML = '';
+    const chipsToShow = Math.min(Math.floor(amount / 10), 6);
+    for (let i = 0; i < chipsToShow; i++) {
+      const chip = document.createElement('div');
+      chip.classList.add('chip');
+      chip.style.opacity = '0';
+      chipStackDiv.appendChild(chip);
+      // Animate fade in and slight rise
       setTimeout(() => {
-        statusEl.textContent = text;
-        statusEl.style.opacity = 1;
-      }, 200);
+        chip.style.opacity = '1';
+        chip.style.transform = 'translateY(-5px) rotate(' + (Math.random()*10-5) + 'deg)';
+      }, 100 * i);
     }
+  }
 
-    // Check if player or dealer has blackjack
-    function checkBlackjack() {
-      const playerVal = handValue(playerHand);
-      const dealerVal = handValue(dealerHand);
-      if (playerVal === 21 && dealerVal === 21) {
-        updateStatus("Both have Blackjack! It's a tie.");
-        chips += bet; // push
-        updateChips();
-        return true;
-      } else if (playerVal === 21) {
-        updateStatus("Blackjack! You win!");
-        chips += bet * 2.5;
-        updateChips();
-        return true;
-      } else if (dealerVal === 21) {
-        updateStatus("Dealer has Blackjack! You lose.");
-        updateChips();
-        return true;
-      }
-      return false;
+  // Update status text with fade
+  function setStatus(text) {
+    statusDiv.style.opacity = '0';
+    setTimeout(() => {
+      statusDiv.textContent = text;
+      statusDiv.style.opacity = '1';
+    }, 300);
+  }
+
+  // Update stats panel
+  function updateStats() {
+    statWins.textContent = `Wins: ${wins}`;
+    statLosses.textContent = `Losses: ${losses}`;
+    statPushes.textContent = `Pushes: ${pushes}`;
+    statStreak.textContent = `Current Streak: ${streak > 0 ? '+' + streak : streak}`;
+    statChips.textContent = `Chips: ${playerChips}`;
+  }
+
+  // Reset buttons states
+  function resetButtons() {
+    btnDeal.disabled = false;
+    btnHit.disabled = true;
+    btnStand.disabled = true;
+  }
+
+  // Enable hit/stand buttons
+  function enablePlayButtons() {
+    btnDeal.disabled = true;
+    btnHit.disabled = false;
+    btnStand.disabled = false;
+  }
+
+  // Start new round
+  function deal() {
+    if (playerChips < currentBet) {
+      setStatus('Not enough chips to bet!');
+      return;
     }
+    playerChips -= currentBet;
+    updateStats();
+    updateChipStack(playerChips);
+    setStatus('Dealing cards...');
+    playerHand = [];
+    dealerHand = [];
+    buildDeck();
+    shuffleDeck();
 
-    // Dealer's turn - reveal and draw until 17+
-    async function dealerTurn() {
-      await renderHand(dealerHand, dealerHandEl, true);
+    // Deal initial cards with slight delay animation
+    playerHand.push(deck.pop());
+    dealerHand.push(deck.pop());
+    playerHand.push(deck.pop());
+    dealerHand.push(deck.pop());
 
-      updateStatus("Dealer's turn...");
-      // Pulse glow effect on dealer hand while dealer plays
-      dealerHandEl.classList.add('dealer-glow');
+    renderHand(playerHand, playerHandDiv, false);
+    renderHand(dealerHand, dealerHandDiv, true);
+    updateChipStack(playerChips);
 
-      while (handValue(dealerHand) < 17) {
-        await new Promise(r => setTimeout(r, 900));
+    enablePlayButtons();
+
+    if (handValue(playerHand) === 21) {
+      setTimeout(() => {
+        stand(); // Auto-stand on blackjack
+      }, 1200);
+    }
+  }
+
+  // Player hits
+  function hit() {
+    playerHand.push(deck.pop());
+    renderHand(playerHand, playerHandDiv, false);
+    const val = handValue(playerHand);
+    if (val > 21) {
+      endRound('bust');
+    } else if (val === 21) {
+      stand();
+    } else {
+      setStatus(`Your hand: ${val}`);
+    }
+  }
+
+  // Player stands, dealer plays
+  function stand() {
+    btnHit.disabled = true;
+    btnStand.disabled = true;
+    renderHand(dealerHand, dealerHandDiv, false);
+    let dealerVal = handValue(dealerHand);
+    let playerVal = handValue(playerHand);
+    setStatus("Dealer's turn...");
+    
+    // Dealer hits until 17 or more
+    const dealerPlay = () => {
+      if (dealerVal < 17) {
         dealerHand.push(deck.pop());
-        await renderHand(dealerHand, dealerHandEl, true);
-      }
-      dealerHandEl.classList.remove('dealer-glow');
-    }
-
-    // End round logic
-    function endRound() {
-      return new Promise(resolve => {
-        let playerVal = handValue(playerHand);
-        let dealerVal = handValue(dealerHand);
-
-        if (playerVal > 21) {
-          updateStatus("You busted! Dealer wins.");
-        } else if (dealerVal > 21) {
-          updateStatus("Dealer busted! You win!");
-          chips += bet * 2;
-        } else if (playerVal > dealerVal) {
-          updateStatus("You win!");
-          chips += bet * 2;
-        } else if (playerVal === dealerVal) {
-          updateStatus("Push! Bet returned.");
-          chips += bet;
-        } else {
-          updateStatus("You lose.");
-        }
-        updateChips();
-
-        hitBtn.disabled = true;
-        standBtn.disabled = true;
-        resetBtn.disabled = false;
-        dealBtn.disabled = true;
-
-        resolve();
-      });
-    }
-
-    // Reset game state for new round
-    function resetGame() {
-      playerHand = [];
-      dealerHand = [];
-      inRound = false;
-
-      updateStatus("Place your bet and deal!");
-      updateChips();
-      dealerHandEl.innerHTML = '';
-      playerHandEl.innerHTML = '';
-
-      dealBtn.disabled = false;
-      hitBtn.disabled = true;
-      standBtn.disabled = true;
-      resetBtn.disabled = true;
-    }
-
-    // Deal button logic
-    dealBtn.onclick = async () => {
-      if (chips < bet) {
-        updateStatus("Not enough chips to bet.");
-        return;
-      }
-      chips -= bet;
-      updateChips(-bet);
-
-      createDeck();
-      shuffleDeck();
-      dealerHand = [deck.pop(), deck.pop()];
-      playerHand = [deck.pop(), deck.pop()];
-      inRound = true;
-
-      // Render hands with animation
-      await renderHand(dealerHand, dealerHandEl, false);
-      await renderHand(playerHand, playerHandEl, true);
-
-      if (checkBlackjack()) {
-        hitBtn.disabled = true;
-        standBtn.disabled = true;
-        resetBtn.disabled = false;
-        dealBtn.disabled = true;
-        inRound = false;
+        renderHand(dealerHand, dealerHandDiv, false);
+        dealerVal = handValue(dealerHand);
+        setTimeout(dealerPlay, 800);
       } else {
-        updateStatus("Hit or Stand?");
-        hitBtn.disabled = false;
-        standBtn.disabled = false;
-        dealBtn.disabled = true;
-        resetBtn.disabled = true;
+        setTimeout(() => endRound('stand'), 500);
       }
     };
+    setTimeout(dealerPlay, 800);
+  }
 
-    // Hit button logic
-    hitBtn.onclick = async () => {
-      if (!inRound) return;
-      playerHand.push(deck.pop());
-      await renderHand(playerHand, playerHandEl, true);
-      if (handValue(playerHand) > 21) {
-        updateStatus("You busted! Dealer wins.");
-        hitBtn.disabled = true;
-        standBtn.disabled = true;
-        resetBtn.disabled = false;
-        inRound = false;
-        await renderHand(dealerHand, dealerHandEl, true);
+  // End round and update chips & stats
+  function endRound(cause) {
+    const playerVal = handValue(playerHand);
+    const dealerVal = handValue(dealerHand);
+    let resultText = '';
+    let payout = 0;
+
+    if (cause === 'bust') {
+      resultText = `You busted with ${playerVal}. You lose.`;
+      losses++;
+      streak = streak > 0 ? -1 : streak -1;
+    } else {
+      if (dealerVal > 21 || playerVal > dealerVal) {
+        resultText = `You win! Your ${playerVal} beats dealer's ${dealerVal}.`;
+        payout = currentBet * 2;
+        wins++;
+        streak = streak >= 0 ? streak + 1 : 1;
+      } else if (playerVal < dealerVal) {
+        resultText = `You lose. Dealer has ${dealerVal}, you have ${playerVal}.`;
+        losses++;
+        streak = streak > 0 ? -1 : streak -1;
       } else {
-        updateStatus("Hit or Stand?");
+        resultText = `Push! Both have ${playerVal}.`;
+        payout = currentBet;
+  // Player stands, dealer plays
+  function stand() {
+    btnHit.disabled = true;
+    btnStand.disabled = true;
+    setStatus("Dealer's turn...");
+
+    // Reveal dealer's hidden card
+    renderHand(dealerHand, dealerHandDiv, false);
+
+    // Dealer hits until 17 or more
+    let dealerVal = handValue(dealerHand);
+    function dealerPlay() {
+      dealerVal = handValue(dealerHand);
+      if (dealerVal < 17) {
+        dealerHand.push(deck.pop());
+        renderHand(dealerHand, dealerHandDiv, false);
+        setTimeout(dealerPlay, 800);
+      } else {
+        endRound();
       }
-    };
+    }
+    setTimeout(dealerPlay, 1000);
+  }
 
-    // Stand button logic
-    standBtn.onclick = async () => {
-      if (!inRound) return;
-      hitBtn.disabled = true;
-      standBtn.disabled = true;
+  // End round and update stats, chips, streaks, status
+  function endRound(bustReason) {
+    const playerVal = handValue(playerHand);
+    const dealerVal = handValue(dealerHand);
+    let outcome = '';
+    let winnings = 0;
 
-      await dealerTurn();
+    if (bustReason === 'bust') {
+      outcome = 'You busted! You lose.';
+      losses++;
+      streak = streak > 0 ? -1 : streak - 1;
+    } else if (playerVal > 21) {
+      outcome = 'You busted! You lose.';
+      losses++;
+      streak = streak > 0 ? -1 : streak - 1;
+    } else if (dealerVal > 21) {
+      outcome = 'Dealer busted! You win!';
+      winnings = currentBet * 2;
+      wins++;
+      streak = streak < 0 ? 1 : streak + 1;
+    } else if (playerVal > dealerVal) {
+      outcome = 'You win!';
+      winnings = currentBet * 2;
+      wins++;
+      streak = streak < 0 ? 1 : streak + 1;
+    } else if (playerVal < dealerVal) {
+      outcome = 'You lose.';
+      losses++;
+      streak = streak > 0 ? -1 : streak - 1;
+    } else {
+      outcome = 'Push! Bet returned.';
+      winnings = currentBet;
+      pushes++;
+      streak = 0;
+    }
 
-      await endRound();
-      inRound = false;
-    };
+    playerChips += winnings;
+    updateStats();
+    updateChipStack(playerChips);
 
-    // Reset button logic
-    resetBtn.onclick = () => {
-      resetGame();
-    };
+    setStatus(outcome);
+    resetButtons();
+  }
 
-    // Initial reset
-    resetGame();
-  </script>
+  // Update bet amount from slider
+  betSlider.addEventListener('input', () => {
+    currentBet = parseInt(betSlider.value);
+    betInfo.textContent = `Bet: ${currentBet} chips`;
+  });
+
+  // Button event listeners
+  btnDeal.addEventListener('click', () => {
+    deal();
+  });
+  btnHit.addEventListener('click', () => {
+    hit();
+  });
+  btnStand.addEventListener('click', () => {
+    stand();
+  });
+
+  // Initial setup
+  updateStats();
+  updateChipStack(playerChips);
+  setStatus('Place your bet and press Deal.');
+
+</script>
+
 </body>
 </html>
